@@ -63,3 +63,5 @@ while True:
 
         # Appending the new response to the rolling messages value, then looping
         messages.append(user_response_dict)
+
+# TODO Add support for muilti-line input, will likely have to be outside of command line. Currently pasting in anything multi-line causes issues

@@ -2,6 +2,7 @@ import openai
 import json
 import pyfiglet
 import random
+import datetime
 
 
 # Defining a small function for printing styled text to console
@@ -10,8 +11,8 @@ def fig_print(text, font):
     print(fig_output)
 
 
-# Defining the seperator line length
-sep_line = "-" * 71
+# Defining the seperator line
+sep_line = "\n" + ("-" * 71) + "\n"
 
 # Defining the json file path containing API information
 json_secrets = "secrets.json"
@@ -28,15 +29,15 @@ openai.organization = json_data["openai_org_id"]
 selected_model = "gpt-3.5-turbo"
 
 # Printing flavour text to console
-fig_print("Open AI Dialogue Generator:", "slant")
-print("Follow the prompts to start generating a dialogue between two defined characters. "
-      "To finish the chat, enter 'end'.\n\nThe selected model is: " + selected_model + "\n\n" + sep_line + "\n")
+fig_print("Dialogue Generator", "slant")
+print("Follow the prompts to start generating a dialogue between two characters. "
+      + selected_model + "\n" + sep_line)
 
 # Define the first character
-character_a_description = input("Describe the first character:\n")
+character_a_description = input("Describe the first character without saying their name:\n")
 
 # Define the second character
-character_b_description = input("\nDescribe the second character:\n")
+character_b_description = input("\nDescribe the second character without saying their name:\n")
 
 # Defining the prompt to get character names
 name_prompt = "1 name idea for a character with the description (name only): "
@@ -60,111 +61,69 @@ name_b_string_raw = name_b_response["choices"][0]["message"]["content"]
 name_b_string_clean = name_b_string_raw.replace("\n", "")
 
 # Creating a description of the characters including their names, to pass to prompts
-the_situation = """There are two characters.
-
-1st character's name: %s
+the_situation = """1st character's name: %s
 1st character's description: %s
 
 2nd character's name: %s
-2nd character's description: %s
-
-They are having a conversation.""" % (name_a_string_clean,
+2nd character's description: %s""" % (name_a_string_clean,
                                       character_a_description,
                                       name_b_string_clean,
                                       character_b_description)
 
 # Print the situation set-up to console
-print("\n" + sep_line + "\n\n" + the_situation + "\n\n" + sep_line + "\n")
+print(sep_line + "\n" + the_situation + "\n" + sep_line)
 
 # Set up prompts for certain choices below
-situation_a_random = "Act as the 1st character. I will be the 2nd character. Do not provide a response. " \
-                     "Begin a conversation. Initially, focus on a topic. " \
-                     "This topic can be anything at all, decide randomly. " \
-                     "Don't break character for the rest of this chat session. " \
-                     "Provide only a single response."
+situation_generic = "Generate a conversation between these two characters. Only include the conversation. "
+relatability = "The topic of the conversation should be related to the characters and their potential interests. "
+unrelatability = "The topic of the conversation should be not related to the characters at all. "
+include_spaces = "Always include space between each line of dialogue. "
+dialogue_format = "Always format the dialogue like this 'Person: What they said'"
 
-situation_a_related = "Act as the 1st character. I will be the 2nd character. Do not provide a response. " \
-                      "Begin a conversation. Initially, focus on a topic. " \
-                      "This topic should be related to your character and their potential interests. " \
-                      "Don't break character for the rest of this chat session. " \
-                      "Provide only a single response."
+# Combining those
+situation_related = situation_generic + relatability + include_spaces + dialogue_format
+situation_unrelated = situation_generic + unrelatability + include_spaces + dialogue_format
 
-situation_b_random = "Act as the 2nd character. I will be the 1st character. Do not provide a response. " \
-                     "Begin a conversation. Initially, focus on a topic. " \
-                     "This topic can be anything at all, decide randomly. " \
-                     "Don't break character for the rest of this chat session. " \
-                     "Provide only a single response."
-
-situation_b_related = "Act as the 2nd character. I will be the 1st character. Do not provide a response. " \
-                      "egin a conversation. Initially, focus on a topic. This topic should be related " \
-                      "to your character and their potential interests. " \
-                      "Don't break character for the rest of this chat session. " \
-                      "Provide only a single response." \
+# The selected situation type, which will be altered depending on the control flow below
+situation_selected = situation_related
 
 # Defining the variable which to contain the selected conversation start type
 conversation_choice = 1
 
-# Defining the variable to contain the chosen character in certain prompts
-character_choice = 1
+# Variable to contain the information on the randomly ai selected topic for choice 1
+ai_selected_topic = 1
 
 # Options for beginning the dialogue, where variables are defined to drive other logic
 while True:
-    print("How would you like to the conversation to play out?")
+    print("How would you like the conversation to begin?")
     print("1. Let the AI decide everything")
     print("2. Define the topic of conversation")
-    print("3. Start the conversation as one of the characters, then let the AI decide")
-    print("4. Act as one of the characters for the whole dialogue")
-    choice = input("\nEnter a number (1-4):\n")
+    choice = input("\nEnter a number (1-2):\n")
 
     # Handle the user's selection
     if choice == "1":  # Let the AI decide everything
         # Randomly determining how the AI should decide on a topic
-        if random.random() < 0.5:  # Topic is completely random
-            if random.random() < 0.5:   # Character a starts
-                situation_variation = situation_a_random
-                character_choice = 1
-            else:  # Character b starts
-                situation_variation = situation_a_random
-                character_choice = 2
-        else:  # Topic is related to the character somehow
-            if random.random() < 0.5:  # Character a starts
-                situation_variation = situation_a_related
-                character_choice = 1
-            else:  # Character b starts
-                situation_variation = situation_b_related
-                character_choice = 2
+        if random.random() < 0.5:  # Topic unrelated to the characters
+            situation_selected = situation_unrelated
+            ai_selected_topic = 1
+        else:  # Topic is related to the characters somehow
+            situation_selected = situation_related
+            ai_selected_topic = 2
         conversation_choice = 1
     elif choice == "2":  # Define the topic of conversation
         user_defined_topic = input("\nWhat should the topic of conversation be?:\n")
-        situation_variation = "should be " + user_defined_topic
+        situation_selected = situation_generic + "The topic of the conversation should be " + user_defined_topic
         conversation_choice = 2
-    elif choice == "3":  # Start the conversation as one of the characters, then let the AI decide
-        while True:
-            print("\nWhich character should start the conversation?:")
-            print("1. Character 1: " + "'" + name_a_string_clean + "'")
-            print("2. Character 2: " + "'" + name_b_string_clean + "'")
-            choice = input("\nEnter 1 or 2: ")
-            if choice == "1":
-                character_choice = 1
-                break
-            elif choice == "2":
-                character_choice = 2
-                break
-            else:
-                print("Invalid input. Please choose 1 or 2.\n")
-        conversation_choice = 3
-    elif choice == "4":  # Act as one of the characters for the whole dialogue
-        conversation_choice = 4
     # What happens if they input the wrong number at the start
     else:
-        print("Invalid selection. Please enter a number between 1 and 4.\n")
+        print("Invalid selection. Please enter a number between 1 and 2.\n")
         continue
 
     # Exit the loop if the user made a valid selection
     break
 
 # Printing a seperator line
-print("\n" + sep_line + "\n")
+print(sep_line)
 
 
 # Function to get the response object based on a selected model and messages dict
@@ -186,85 +145,104 @@ def get_message_content(response_obj):
     return messages_content_in_func_lstrip
 
 
-# Defining dictionaries to contain messages in the perspective of each character
-messages_a_perspective = []  # Target format is {"role": "user", "content": "Placeholder"}, ...
-messages_b_perspective = []  # Target format is {"role": "user", "content": "Placeholder"}, ...
+# Defining the list to contain message dictionaries
+rolling_messages = []  # Target format is {"role": "user", "content": "Placeholder"}, ......
+
+# Combine the set-up elements
+combined_situation = the_situation + "\n\n" + situation_selected
+
+# Append the setup into the rolling_messages dictionary
+rolling_messages.append({"role": "user", "content": combined_situation})
 
 
-# Starting the chat off depending on the choices above - but not yet looping
-if conversation_choice == 1:  # Let the AI decide everything
-
-    if character_choice == 1:  # i.e. character a
-        # Combine the set-up elements
-        combined_situation = the_situation + "\n\n" + situation_variation
-        # Append the set-up for a into the a messages dictionary
-        messages_a_perspective.append({"role": "user", "content": combined_situation})
-        # Get the a response
-        response_a = get_response(selected_model, messages_a_perspective)
-        # Get the response as a dict
-        message_dict_as_a = get_message_dict(response_a)
-        # Append that dict to the messages for the a perspective
-        messages_a_perspective.append(message_dict_as_a)
-        # Get just the content of that message as a string
-        message_a_content = get_message_content(response_a)
-        # Creating the prompt for the b perspective
-        situation_b_perspective = "".join([the_situation,
-                                           "\n\n",
-                                           "Act as the 2nd character. Pretend that I am the 1st character. ",
-                                           "Don't break character for the rest of the chat session.\n\n",
-                                           "I say: ",
-                                           "'", message_a_content, "'",
-                                           "\n\nHow do you respond? Only include your in character responses. ",
-                                           "Do not provide a response."])
-        # Append the set-up for b into the b messages dictionary
-        messages_b_perspective.append({"role": "user", "content": situation_b_perspective})
-        # Get the b response
-        response_b = get_response(selected_model, messages_a_perspective)
-        # Get the response as b dict
-        message_dict_as_b = get_message_dict(response_b)
-        # Append that dict to the messages for the b perspective
-        messages_b_perspective.append(message_dict_as_b)
-
-    if character_choice == 2:  # i.e. character a
-        # Combine the set-up elements
-        combined_situation = the_situation + "\n\n" + situation_variation
-        # Append the set-up for b into the b messages dictionary
-        messages_b_perspective.append({"role": "user", "content": combined_situation})
-        # Get the b response
-        response_b = get_response(selected_model, messages_b_perspective)
-        # Get the response as a dict
-        message_dict_as_b = get_message_dict(response_b)
-        # Append that dict to the messages for the a perspective
-        messages_b_perspective.append(message_dict_as_b)
-        # Get just the content of that message as b string
-        message_b_content = get_message_content(response_b)
-        # Creating the prompt for the a perspective
-        situation_a_perspective = "".join([the_situation,
-                                           "\n\n",
-                                           "Act as the 1st character. Pretend that I am the 2nd character. ",
-                                           "Don't break character for the rest of the chat session.\n\n",
-                                           "I say: ",
-                                           "'", message_b_content, "'",
-                                           "\n\nHow do you respond? Only include your in character responses. ",
-                                           "Do not provide a response."])
-        # Append the set-up for a into the a messages dictionary
-        messages_a_perspective.append({"role": "user", "content": situation_a_perspective})
-        # Get the a response
-        response_a = get_response(selected_model, messages_a_perspective)
-        # Get the response as a dict
-        message_dict_as_a = get_message_dict(response_a)
-        # Append that dict to the messages for the a perspective
-        messages_a_perspective.append(message_dict_as_a)
-
-print(messages_a_perspective)
-print(messages_b_perspective)
+# Define a function to generate, append and print a response to the situation set-up
+def generate_response():
+    # Get the response object
+    response = get_response(selected_model, rolling_messages)
+    # Get the response as a dict
+    message_dict = get_message_dict(response)
+    # Append that dict to the rolling_messages list
+    rolling_messages.append(message_dict)
+    # Get just the content of that message as a string
+    message_content = get_message_content(response)
+    # Print that content
+    print(message_content)
+    print(sep_line)
 
 
-if conversation_choice == 2:  # Define the topic of conversation
-    print("do this")
+# Generate the initial response, print it, and add it to the rolling messages variable
+generate_response()
 
-if conversation_choice == 3:  # Start the conversation as one of the characters, then let the AI decide
-    print("do this")
+# While loop to continue the conversation based on user input
+while True:
+    # Requesting user response
+    print("How should the conversation continue?")
+    print("1. Let the AI decide")
+    print("2. Describe what happens next")
+    print("3. End the conversation")
+    user_response = input("\nEnter a number (1-3):\n")
 
-if conversation_choice == 4:  # Act as one of the characters for the whole dialogue
-    print("do this")
+    # Setting the break condition
+    if user_response == "1":
+        new_message = "Continue the conversation."
+        rolling_messages.append({"role": "user", "content": new_message})
+        print(sep_line)
+        generate_response()
+    elif user_response == "2":
+        new_message = input("\nDescribe what happens next:\n")
+        new_message = "Continue the conversation where this happens next: " + new_message
+        rolling_messages.append({"role": "user", "content": new_message})
+        print(sep_line)
+        generate_response()
+    elif user_response == "3":
+        print(sep_line)
+        while True:
+            # Requesting user response
+            print("Do you want to output the conversation into a text file? It will output in the script folder.")
+            print("1. Yes")
+            print("2. No")
+            user_response = input("\nEnter a number (1-2):\n")
+
+            if user_response == "1":
+                # Define the output file name
+                file_name = "dialogue_generator - " + datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+
+                # Open a file named "output.txt" for writing
+                file = open(file_name + ".txt", "w")
+
+                # Transform the recorded output for the text file
+                string_to_write = ""
+
+                # Loops through the list of dictionaries, printing only the response values from the ai
+                for item in rolling_messages:
+                    if item["role"] == "assistant":
+                        for key, value in item.items():
+                            string_to_write += f"{value}"
+                    string_to_write += "\n"
+
+                # Appends descriptive information about the output and the characters
+                string_to_write = file_name + sep_line + the_situation + sep_line + string_to_write
+
+                # Write the string to the file
+                file.write(string_to_write)
+
+                # Close the file
+                file.close()
+
+                break
+            elif user_response == "2":
+                break
+            else:
+                print("Invalid selection. Please enter a number between 1 and 2.\n")
+                continue
+            break
+        break
+    else:
+        print("Invalid selection. Please enter a number between 1 and 3.\n")
+        continue
+
+# Final message on script completion
+print(sep_line)
+fig_print("Script complete", "slant")
+
+# TODO Add support for muilti-line input, will likely have to be outside of command line. Currently pasting in anything multi-line causes issues

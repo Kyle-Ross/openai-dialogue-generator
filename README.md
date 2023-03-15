@@ -17,3 +17,6 @@ Key Differences to the web UI:
 - Conversations are not saved
 
 ![rolling_chat example gif](https://i.imgur.com/pjuCkKm.gif)
+
+## dialogue_generator
+Command line interface for generating characters and dialogue between them with OpenAI.
