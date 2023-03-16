@@ -31,7 +31,7 @@ selected_model = "gpt-3.5-turbo"
 # Printing flavour text to console
 fig_print("Dialogue Generator", "slant")
 print("Follow the prompts to start generating a dialogue between two characters. "
-      + selected_model + "\n" + sep_line)
+      + "\n\n" + "Selected model: " + selected_model + "\n" + sep_line)
 
 # Define the first character
 character_a_description = input("Describe the first character without saying their name:\n")
@@ -229,6 +229,9 @@ while True:
                 # Close the file
                 file.close()
 
+                # Output success message
+                print("\n\nOutput file saved to current directory!\n\n")
+
                 break
             elif user_response == "2":
                 break
@@ -245,4 +248,5 @@ while True:
 print(sep_line)
 fig_print("Script complete", "slant")
 
-# TODO Add support for muilti-line input, will likely have to be outside of command line. Currently pasting in anything multi-line causes issues
+# Final input call so the CLI doesn't immediately close
+input()
