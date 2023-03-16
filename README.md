@@ -1,5 +1,4 @@
-# openai-bot-bazaar
-
+# openai-dialogue-generator
 ## About
 Various scripts utilising the OpenAI API via their python library. Quick and easy ways to use your paid API key, including ways usually reserved for the far more expensive ChatGPT Plus subscription.
 
