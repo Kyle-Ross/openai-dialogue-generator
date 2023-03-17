@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/create exe.bat
+/secrets.json
+/dialogue_generator - static api reference 2023-03-17.py
+/Executables/dialogue_generator - static api reference 2023-03-17.exe
