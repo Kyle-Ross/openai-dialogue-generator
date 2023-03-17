@@ -46,7 +46,7 @@ if api_key_source == "json":  # Access the keys from a json file in the root dir
 
 if api_key_source == "input":  # Prompt for the input of the API keys
     openai.api_key = input("Input the API key:\n").strip()
-    openai.organization = input("\nInput the organisation key:\n").strip()
+    openai.organization = input("\nInput the organisation id:\n").strip()
     print(sep_line)
 
 
