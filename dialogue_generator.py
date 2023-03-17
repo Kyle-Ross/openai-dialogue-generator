@@ -7,6 +7,13 @@ import datetime
 # Defining the seperator line
 sep_line = "\n" + ("-" * 71) + "\n"
 
+# Variable for the input method to facilitate different ways of entering the API key.
+# Change to "input" to prompt the user for API keys at runtime
+api_key_source = "json"
+
+# Define model to be used
+selected_model = "gpt-3.5-turbo"
+
 
 # Defining a small function for printing styled text to console
 def fig_print(text, font):
@@ -14,8 +21,18 @@ def fig_print(text, font):
     print(fig_output)
 
 
-# Wrapping all code in a function so it can be run successively
-def run_script():
+# Wrapping that in a another function to produce to start message for the script
+def title_print():
+    fig_print("Dialogue Generator", "slant")
+    print("Follow the prompts to start generating a dialogue between two characters. "
+          + "\n\n" + "Selected model: " + selected_model + "\n" + sep_line)
+
+
+# Printing the title
+title_print()
+
+# Get api keys using one of two methods
+if api_key_source == "json":  # Access the keys from a json file in the root directory
     # Defining the json file path containing API information
     json_secrets = "secrets.json"
 
@@ -27,14 +44,14 @@ def run_script():
     openai.api_key = json_data["openai_api_key"]
     openai.organization = json_data["openai_org_id"]
 
-    # Define model to be used
-    selected_model = "gpt-3.5-turbo"
+if api_key_source == "input":  # Prompt for the input of the API keys
+    openai.api_key = input("Input the API key:\n").strip()
+    openai.organization = input("\nInput the organisation key:\n").strip()
+    print(sep_line)
 
-    # Printing flavour text to console
-    fig_print("Dialogue Generator", "slant")
-    print("Follow the prompts to start generating a dialogue between two characters. "
-          + "\n\n" + "Selected model: " + selected_model + "\n" + sep_line)
 
+# Wrapping all code in a function so it can be run successively
+def run_script():
     # Define the first character
     character_a_description = input("Describe the first character without saying their name:\n")
 
@@ -262,6 +279,9 @@ while True:
     end_response = input("\nEnter a number (1-2):\n")
     if end_response == "1":
         print(sep_line)
+        # Re-print the title
+        title_print()
+        # Run the script again
         run_script()
     elif end_response == "2":
         break
