@@ -1,8 +1,13 @@
 # openai-dialogue-generator
 
-Interactive dialogue generator built using the OpenAI API via their python library. 
+Interactive dialogue generator built using the OpenAI API via their python library.
 
-Easily usable by anyone with their own API key, just change the values in the 'secrets_placeholder.json' and change the file name to 'secrets.json'.
+## How to use
+
+There are 3 ways:
+1. Clone the repo and insert your api keys into the `secrets_placeholder.json` file using a text editor. Then rename the file to `secrets.json`.
+2. Download the `dialogue_generator - key via json.exe` file, and repeat the steps above with the json file. Make sure it is in the same folder as the exe.
+3. Download the `dialogue_generator - key via input.exe` file, and follow the prompts to enter your api keys when you run the exe.
 
 ## How it works
 A step-by-step command line interface guides you through the process of generating character and starting a dialogue between them.
